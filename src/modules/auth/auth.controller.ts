@@ -18,13 +18,12 @@ import { Response, Request } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   // =====================================================
   // POST /api/auth/register - User registration
@@ -111,12 +110,11 @@ export class AuthController {
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   async refreshTokens(
-    @Body() refreshTokenDto: RefreshTokenDto,
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    // Get refresh token from cookie or body
-    const refreshToken = req.cookies?.refreshToken || refreshTokenDto.refreshToken;
+    // Get refresh token from cookie
+    const refreshToken = req.cookies?.refreshToken;
 
     if (!refreshToken) {
       return {
@@ -125,11 +123,8 @@ export class AuthController {
       };
     }
 
-    // Decode the access token to get the user ID (even if expired)
-    const tokens = await this.authService.refreshTokens(
-      refreshTokenDto.userId,
-      refreshToken,
-    );
+    // The authService will look up the userId from the refresh token
+    const tokens = await this.authService.refreshTokens(refreshToken);
 
     // Set new refresh token in cookie
     this.setRefreshTokenCookie(res, tokens.refreshToken);

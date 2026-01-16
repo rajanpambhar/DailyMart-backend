@@ -39,7 +39,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   // =====================================================
   // REGISTER - Migrated from PHP signup.php
@@ -165,11 +165,10 @@ export class AuthService {
   // =====================================================
   // REFRESH TOKENS
   // =====================================================
-  async refreshTokens(userId: string, refreshToken: string): Promise<AuthTokens> {
+  async refreshTokens(refreshToken: string): Promise<AuthTokens> {
     // Find the refresh token in database
     const storedToken = await this.prisma.refreshToken.findFirst({
       where: {
-        userId,
         token: refreshToken,
         expiresAt: { gt: new Date() },
       },
@@ -254,7 +253,7 @@ export class AuthService {
   private calculateExpiry(duration: string): Date {
     const now = new Date();
     const match = duration.match(/^(\d+)([smhd])$/);
-    
+
     if (!match) {
       // Default to 7 days
       return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
