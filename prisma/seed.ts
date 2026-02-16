@@ -46,33 +46,33 @@ async function main() {
     { name: 'Potatoes (1kg)', price: 30, stockQuantity: 200, categorySlug: 'vegetables' },
     { name: 'Onions (1kg)', price: 35, stockQuantity: 180, categorySlug: 'vegetables' },
     { name: 'Carrots (500g)', price: 28, stockQuantity: 120, categorySlug: 'vegetables' },
-    
+
     // Fruits
     { name: 'Bananas (1 dozen)', price: 50, stockQuantity: 100, categorySlug: 'fruits', isBestSelling: true },
     { name: 'Apples (1kg)', price: 180, stockQuantity: 80, categorySlug: 'fruits', isBestSelling: true },
     { name: 'Oranges (1kg)', price: 80, stockQuantity: 90, categorySlug: 'fruits' },
     { name: 'Grapes (500g)', price: 60, stockQuantity: 70, categorySlug: 'fruits' },
-    
+
     // Home Essentials
     { name: 'Laundry Detergent (1L)', price: 250, stockQuantity: 60, categorySlug: 'home-essentials' },
     { name: 'Dish Soap (500ml)', price: 85, stockQuantity: 100, categorySlug: 'home-essentials' },
-    
+
     // Men's Clothing
     { name: "Men's T-Shirt (Cotton)", price: 599, slashedPrice: 799, stockQuantity: 50, categorySlug: 'mens-clothing', isBestSelling: true },
     { name: "Men's Jeans (Blue)", price: 1299, slashedPrice: 1599, stockQuantity: 40, categorySlug: 'mens-clothing' },
-    
+
     // Women's Clothing
     { name: "Women's Dress (Floral)", price: 1499, slashedPrice: 1999, stockQuantity: 30, categorySlug: 'womens-clothing', isBestSelling: true },
     { name: "Women's Kurti", price: 799, stockQuantity: 60, categorySlug: 'womens-clothing' },
-    
+
     // Electronics
     { name: 'Wireless Earbuds', price: 1999, slashedPrice: 2999, stockQuantity: 25, categorySlug: 'electronics', isBestSelling: true },
     { name: 'Bluetooth Speaker', price: 1499, stockQuantity: 30, categorySlug: 'electronics' },
-    
+
     // Kids
     { name: 'Building Blocks Set', price: 599, stockQuantity: 40, categorySlug: 'kids', isBestSelling: true },
     { name: 'Coloring Book', price: 149, stockQuantity: 100, categorySlug: 'kids' },
-    
+
     // Beauty Products
     { name: 'Face Cream (50ml)', price: 299, stockQuantity: 70, categorySlug: 'beauty-products', isBestSelling: true },
     { name: 'Shampoo (250ml)', price: 199, stockQuantity: 90, categorySlug: 'beauty-products' },
@@ -95,7 +95,7 @@ async function main() {
   // Seed Users
   console.log('👥 Seeding users...');
   const hashedAdminPassword = await bcrypt.hash('admin123', 12);
-  const hashedUserPassword = await bcrypt.hash('user123', 12);
+  const hashedUserPassword = await bcrypt.hash('Rajan123', 12);
 
   await prisma.user.create({
     data: {
@@ -108,18 +108,16 @@ async function main() {
 
   await prisma.user.create({
     data: {
-      fullname: 'Test User',
-      email: 'user@dailymart.com',
+      fullname: 'Rajan Pambhar',
+      email: 'rajanpambhar02@gmail.com',
       password: hashedUserPassword,
-      role: UserRole.USER,
+      role: UserRole.ADMIN,
     },
   });
 
   console.log('✅ Database seeded successfully!');
   console.log('');
   console.log('📧 Default credentials:');
-  console.log('   Admin: admin@dailymart.com / admin123');
-  console.log('   User:  user@dailymart.com / user123');
 }
 
 main()
