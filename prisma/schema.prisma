@@ -60,6 +60,7 @@ model User {
   refreshTokens RefreshToken[]
   wishlist      Wishlist[]
   reviews       Review[]
+  addresses     Address[]
 
   @@map("users")
 }
@@ -167,4 +168,23 @@ model Review {
   updatedAt DateTime @updatedAt
 
   @@map("reviews")
+}
+
+model Address {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   @default("Home") // Home, Work, Other
+  fullName  String
+  phone     String
+  street    String
+  city      String
+  state     String
+  zipCode   String
+  country   String   @default("India")
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("addresses")
 }
