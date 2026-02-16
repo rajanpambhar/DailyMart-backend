@@ -16,6 +16,7 @@ import { ProductsModule } from './modules/products/products.module';
 import { CartModule } from './modules/cart/cart.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { WishlistModule } from './modules/wishlist/wishlist.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { WishlistModule } from './modules/wishlist/wishlist.module';
     CartModule,
     OrdersModule,
     WishlistModule,
+    ReviewsModule,
   ],
   providers: [
     // Apply rate limiting globally

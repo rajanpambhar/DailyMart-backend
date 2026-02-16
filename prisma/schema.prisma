@@ -59,6 +59,7 @@ model User {
   orders        Order[]
   refreshTokens RefreshToken[]
   wishlist      Wishlist[]
+  reviews       Review[]
 
   @@map("users")
 }
@@ -105,6 +106,7 @@ model Product {
   deletedAt     DateTime?
   orderItems    OrderItem[]
   wishlistItems Wishlist[]
+  reviews       Review[]
 
   @@map("products")
 }
@@ -151,4 +153,18 @@ model Wishlist {
 
   @@unique([userId, productId])
   @@map("wishlists")
+}
+
+model Review {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String   @db.ObjectId
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("reviews")
 }
