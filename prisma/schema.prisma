@@ -22,6 +22,7 @@ enum UserRole {
 }
 
 enum PaymentMethod {
+  RAZORPAY      // Online payment via Razorpay (Card/UPI/NetBanking)
   CREDIT_CARD
   DEBIT_CARD
   NET_BANKING
@@ -113,23 +114,27 @@ model Product {
 }
 
 model Order {
-  id              String         @id @default(auto()) @map("_id") @db.ObjectId
-  userId          String         @db.ObjectId
-  user            User           @relation(fields: [userId], references: [id])
-  orderDate       DateTime       @default(now())
-  totalAmount     Float
-  discountAmount  Float          @default(0)
-  finalAmount     Float          @default(0)
-  couponCode      String?
-  paymentMethod   PaymentMethod  @default(COD)
-  paymentStatus   PaymentStatus  @default(PENDING)
-  shippingName    String
-  shippingAddress String
-  shippingPhone   String
-  deliveryStatus  DeliveryStatus @default(PENDING)
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  orderItems      OrderItem[]
+  id                  String         @id @default(auto()) @map("_id") @db.ObjectId
+  userId              String         @db.ObjectId
+  user                User           @relation(fields: [userId], references: [id])
+  orderDate           DateTime       @default(now())
+  totalAmount         Float
+  discountAmount      Float          @default(0)
+  finalAmount         Float          @default(0)
+  couponCode          String?
+  paymentMethod       PaymentMethod  @default(COD)
+  paymentStatus       PaymentStatus  @default(PENDING)
+  shippingName        String
+  shippingAddress     String
+  shippingPhone       String
+  deliveryStatus      DeliveryStatus @default(PENDING)
+  // Razorpay Payment Fields
+  razorpayOrderId     String?        // Razorpay order ID
+  razorpayPaymentId   String?        // Razorpay payment ID after successful payment
+  razorpaySignature   String?        // Razorpay signature for verification
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  orderItems          OrderItem[]
 
   @@map("orders")
 }
