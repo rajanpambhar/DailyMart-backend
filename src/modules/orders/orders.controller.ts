@@ -26,7 +26,7 @@ import { UserRole, PaymentStatus, DeliveryStatus } from '@prisma/client';
 @Controller('orders')
 @UseGuards(JwtAuthGuard)
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(private readonly ordersService: OrdersService) { }
 
   // =====================================================
   // POST /api/orders - Create new order (checkout)
@@ -89,6 +89,34 @@ export class OrdersController {
   }
 
   // =====================================================
+  // GET /api/orders/analytics/revenue-trends - Get revenue trends (Admin)
+  // =====================================================
+  @Get('analytics/revenue-trends')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
+  async getRevenueTrends() {
+    const trends = await this.ordersService.getRevenueTrends();
+    return {
+      success: true,
+      data: trends,
+    };
+  }
+
+  // =====================================================
+  // GET /api/orders/analytics/top-products - Get top selling products (Admin)
+  // =====================================================
+  @Get('analytics/top-products')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
+  async getTopProducts(@Query('limit') limit?: number) {
+    const products = await this.ordersService.getTopProducts(limit || 5);
+    return {
+      success: true,
+      data: products,
+    };
+  }
+
+  // =====================================================
   // GET /api/orders/:id - Get order details
   // Migrated from: admin_orders.php?action=view
   // =====================================================
@@ -98,7 +126,7 @@ export class OrdersController {
     @CurrentUser() user: any,
   ) {
     const order = await this.ordersService.findById(id);
-    
+
     // Non-admin users can only view their own orders
     if (user.role !== UserRole.ADMIN && order.userId !== user.id) {
       return {

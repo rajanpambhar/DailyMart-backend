@@ -232,18 +232,41 @@ export class OrdersService {
   // GET STATISTICS (Admin)
   // =====================================================
   async getStatistics() {
+    // Get today's date in IST (India Standard Time - UTC+5:30)
+    const today = new Date();
+    // Convert to IST by adding 5 hours 30 minutes offset
+    const istOffset = 5.5 * 60 * 60 * 1000; // 5.5 hours in milliseconds
+    const istDate = new Date(today.getTime() + istOffset);
+    istDate.setUTCHours(0, 0, 0, 0);
+    // Convert back to UTC for database query
+    const todayStart = new Date(istDate.getTime() - istOffset);
+
     const [
       totalOrders,
       pendingOrders,
       completedOrders,
+      todayOrders,
       totalRevenue,
+      recentOrders,
     ] = await Promise.all([
       this.prisma.order.count(),
       this.prisma.order.count({ where: { paymentStatus: PaymentStatus.PENDING } }),
       this.prisma.order.count({ where: { paymentStatus: PaymentStatus.COMPLETED } }),
+      this.prisma.order.count({
+        where: {
+          createdAt: { gte: todayStart },
+        },
+      }),
       this.prisma.order.aggregate({
         where: { paymentStatus: PaymentStatus.COMPLETED },
         _sum: { totalAmount: true },
+      }),
+      this.prisma.order.findMany({
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          user: { select: { fullname: true, email: true } },
+        },
       }),
     ]);
 
@@ -251,11 +274,107 @@ export class OrdersService {
       totalOrders,
       pendingOrders,
       completedOrders,
+      todayOrders,
       cancelledOrders: await this.prisma.order.count({
         where: { paymentStatus: PaymentStatus.CANCELLED },
       }),
       totalRevenue: totalRevenue._sum.totalAmount || 0,
+      recentOrders,
     };
+  }
+
+  // =====================================================
+  // GET REVENUE TRENDS (Last 7 days)
+  // =====================================================
+  async getRevenueTrends() {
+    const days = 7;
+    const trends = [];
+    const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
+
+    for (let i = days - 1; i >= 0; i--) {
+      // Calculate date in IST
+      const now = new Date();
+      const istNow = new Date(now.getTime() + istOffset);
+      istNow.setUTCDate(istNow.getUTCDate() - i);
+      istNow.setUTCHours(0, 0, 0, 0);
+
+      // Convert to UTC for database query
+      const dateStart = new Date(istNow.getTime() - istOffset);
+      const dateEnd = new Date(dateStart);
+      dateEnd.setDate(dateEnd.getDate() + 1);
+
+      const [revenue, orders] = await Promise.all([
+        this.prisma.order.aggregate({
+          where: {
+            paymentStatus: PaymentStatus.COMPLETED,
+            createdAt: {
+              gte: dateStart,
+              lt: dateEnd,
+            },
+          },
+          _sum: { totalAmount: true },
+        }),
+        this.prisma.order.count({
+          where: {
+            createdAt: {
+              gte: dateStart,
+              lt: dateEnd,
+            },
+          },
+        }),
+      ]);
+
+      // Format date in IST for display
+      const displayDate = new Date(istNow.getTime());
+      trends.push({
+        date: displayDate.toISOString().split('T')[0],
+        revenue: revenue._sum.totalAmount || 0,
+        orders,
+      });
+    }
+
+    return trends;
+  }
+
+  // =====================================================
+  // GET TOP SELLING PRODUCTS
+  // =====================================================
+  async getTopProducts(limit: number = 5) {
+    const orderItems = await this.prisma.orderItem.groupBy({
+      by: ['productId'],
+      _sum: {
+        quantity: true,
+        subtotal: true,
+      },
+      orderBy: {
+        _sum: {
+          quantity: 'desc',
+        },
+      },
+      take: limit,
+    });
+
+    const productsWithDetails = await Promise.all(
+      orderItems.map(async (item) => {
+        const product = await this.prisma.product.findUnique({
+          where: { id: item.productId },
+          select: {
+            id: true,
+            name: true,
+            price: true,
+            image: true,
+          },
+        });
+
+        return {
+          product,
+          totalQuantity: item._sum.quantity || 0,
+          totalRevenue: item._sum.subtotal || 0,
+        };
+      })
+    );
+
+    return productsWithDetails.filter(item => item.product !== null);
   }
 
   // =====================================================
