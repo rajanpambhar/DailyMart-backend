@@ -118,6 +118,9 @@ model Order {
   user            User           @relation(fields: [userId], references: [id])
   orderDate       DateTime       @default(now())
   totalAmount     Float
+  discountAmount  Float          @default(0)
+  finalAmount     Float          @default(0)
+  couponCode      String?
   paymentMethod   PaymentMethod  @default(COD)
   paymentStatus   PaymentStatus  @default(PENDING)
   shippingName    String
@@ -187,4 +190,19 @@ model Address {
   updatedAt DateTime @updatedAt
 
   @@map("addresses")
+}  
+
+model Coupon {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  code       String   @unique
+  discount   Float    // Percentage (0-100) or Fixed Amount
+  type       String   @default("PERCENTAGE") // 'PERCENTAGE' or 'FIXED'
+  expiry     DateTime
+  usageLimit Int?     // Optional limit on how many times it can be used
+  usageCount Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("coupons")
 }

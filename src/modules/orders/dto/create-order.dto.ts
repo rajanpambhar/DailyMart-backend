@@ -12,6 +12,7 @@ import {
   IsNumber,
   Min,
   MaxLength,
+  IsOptional,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PaymentMethod } from '@prisma/client';
@@ -48,4 +49,12 @@ export class CreateOrderDto {
   @IsNotEmpty({ message: 'Please enter your phone number' })
   @MaxLength(20)
   shippingPhone: string;
+
+  @IsString()
+  @IsOptional()
+  couponCode?: string;
+
+  @IsNumber()
+  @IsOptional()
+  discountAmount?: number;
 }

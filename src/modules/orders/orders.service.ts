@@ -15,17 +15,22 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderQueryDto } from './dto/order-query.dto';
 import { PaymentStatus, DeliveryStatus } from '@prisma/client';
 
+import { CouponsService } from '../coupons/coupons.service';
+
 @Injectable()
 export class OrdersService {
   private readonly logger = new Logger(OrdersService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly couponsService: CouponsService
+  ) { }
 
   // =====================================================
   // CREATE ORDER
   // =====================================================
   async createOrder(userId: string, createOrderDto: CreateOrderDto) {
-    const { items, paymentMethod, shippingName, shippingAddress, shippingPhone } = createOrderDto;
+    const { items, paymentMethod, shippingName, shippingAddress, shippingPhone, couponCode } = createOrderDto;
 
     // Validate all products and calculate total
     let totalAmount = 0;
@@ -55,6 +60,31 @@ export class OrdersService {
       });
     }
 
+    // Handle Coupon Logic
+    let discountAmount = 0;
+    let finalAmount = totalAmount;
+    let validCoupon = null;
+
+    if (couponCode) {
+      try {
+        const coupon = await this.couponsService.validateCoupon(couponCode);
+        validCoupon = coupon;
+
+        if (coupon.type === 'PERCENTAGE') {
+          discountAmount = (totalAmount * coupon.discount) / 100;
+        } else {
+          // If FIXED, ensure discount doesn't exceed total
+          discountAmount = Math.min(coupon.discount, totalAmount);
+        }
+
+        finalAmount = Math.max(0, totalAmount - discountAmount);
+      } catch (error) {
+        // Should we fail if coupon is invalid? Probably yes, to avoid confusion.
+        // Or just ignore it? The user explicitly provided a couponCode, so failing is better.
+        throw error;
+      }
+    }
+
     // Create order with items in a transaction
     const order = await this.prisma.$transaction(async (tx) => {
       // Create the order
@@ -62,6 +92,9 @@ export class OrdersService {
         data: {
           userId,
           totalAmount,
+          discountAmount,
+          finalAmount,
+          couponCode: validCoupon ? validCoupon.code : null,
           paymentMethod,
           shippingName,
           shippingAddress,
@@ -86,6 +119,14 @@ export class OrdersService {
           data: {
             stockQuantity: { decrement: item.quantity },
           },
+        });
+      }
+
+      // Increment coupon usage
+      if (validCoupon) {
+        await tx.coupon.update({
+          where: { id: validCoupon.id },
+          data: { usageCount: { increment: 1 } },
         });
       }
 
