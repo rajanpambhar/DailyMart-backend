@@ -254,7 +254,7 @@ export class OrdersService {
       this.prisma.order.count({ where: { paymentStatus: PaymentStatus.COMPLETED } }),
       this.prisma.order.count({
         where: {
-          createdAt: { gte: todayStart },
+          orderDate: { gte: todayStart },
         },
       }),
       this.prisma.order.aggregate({
@@ -307,7 +307,7 @@ export class OrdersService {
         this.prisma.order.aggregate({
           where: {
             paymentStatus: PaymentStatus.COMPLETED,
-            createdAt: {
+            orderDate: {
               gte: dateStart,
               lt: dateEnd,
             },
@@ -316,7 +316,7 @@ export class OrdersService {
         }),
         this.prisma.order.count({
           where: {
-            createdAt: {
+            orderDate: {
               gte: dateStart,
               lt: dateEnd,
             },
