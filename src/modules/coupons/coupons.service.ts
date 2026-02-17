@@ -26,6 +26,19 @@ export class CouponsService {
         });
     }
 
+    async findActiveCoupons() {
+        const now = new Date();
+        return this.prisma.coupon.findMany({
+            where: {
+                isActive: true,
+                expiry: {
+                    gt: now,
+                },
+            },
+            orderBy: { createdAt: 'desc' },
+        });
+    }
+
     async findOne(id: string) {
         const coupon = await this.prisma.coupon.findUnique({
             where: { id },

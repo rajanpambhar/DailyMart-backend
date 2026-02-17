@@ -25,6 +25,11 @@ export class CouponsController {
         return this.couponsService.findAll();
     }
 
+    @Get('active')
+    findActive() {
+        return this.couponsService.findActiveCoupons();
+    }
+
     @Post('apply')
     async applyCoupon(@Body() applyCouponDto: ApplyCouponDto) {
         return this.couponsService.validateCoupon(applyCouponDto.code);
