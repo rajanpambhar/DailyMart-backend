@@ -52,9 +52,13 @@ export class AddressesService {
             });
         }
 
+        // Remove fields that should not be updated manually
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id, userId: _, createdAt, updatedAt, ...updateData } = data;
+
         return this.prisma.address.update({
             where: { id: addressId },
-            data,
+            data: updateData,
         });
     }
 

@@ -259,7 +259,7 @@ export class OrdersService {
       }),
       this.prisma.order.aggregate({
         where: { paymentStatus: PaymentStatus.COMPLETED },
-        _sum: { totalAmount: true },
+        _sum: { finalAmount: true },
       }),
       this.prisma.order.findMany({
         take: 5,
@@ -278,7 +278,7 @@ export class OrdersService {
       cancelledOrders: await this.prisma.order.count({
         where: { paymentStatus: PaymentStatus.CANCELLED },
       }),
-      totalRevenue: totalRevenue._sum.totalAmount || 0,
+      totalRevenue: totalRevenue._sum.finalAmount || 0,
       recentOrders,
     };
   }
@@ -312,7 +312,7 @@ export class OrdersService {
               lt: dateEnd,
             },
           },
-          _sum: { totalAmount: true },
+          _sum: { finalAmount: true },
         }),
         this.prisma.order.count({
           where: {
@@ -328,7 +328,7 @@ export class OrdersService {
       const displayDate = new Date(istNow.getTime());
       trends.push({
         date: displayDate.toISOString().split('T')[0],
-        revenue: revenue._sum.totalAmount || 0,
+        revenue: revenue._sum.finalAmount || 0,
         orders,
       });
     }
