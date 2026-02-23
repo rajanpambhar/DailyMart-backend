@@ -1,6 +1,6 @@
 # DailyMart Backend API
 
-Modern Node.js + NestJS backend migrated from PHP/MySQL to TypeScript/PostgreSQL.
+Modern Node.js + NestJS backend
 
 ## 🚀 Tech Stack
 
@@ -157,23 +157,6 @@ The API will be available at `http://localhost:3001/api`
 - **XSS Protection**: Helmet security headers
 - **CORS**: Configurable origin restrictions
 
-## 🗄️ Migration from PHP
-
-| PHP Component | Node.js Equivalent |
-|---------------|-------------------|
-| Session auth | JWT tokens |
-| mysqli queries | Prisma ORM |
-| password_hash() | bcrypt |
-| $_SESSION | Request context |
-| include/require | ES imports |
-| .php files | TypeScript modules |
-| MySQL | PostgreSQL |
-
-## 📝 Default Credentials
-
-After seeding:
-- **Admin**: admin@dailymart.com / admin123
-- **User**: user@dailymart.com / user123
 
 ## 🛠️ Environment Variables
 
